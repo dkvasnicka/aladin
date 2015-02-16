@@ -19,7 +19,6 @@
     :builds [{
         :source-paths ["src/cljs"]
         :compiler {
-          :preamble ["reagent/react.js"]         
           :output-to "public/app.js"
           :optimizations :whitespace
           :pretty-print true
