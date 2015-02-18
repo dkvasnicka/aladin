@@ -5,6 +5,16 @@
 
 (enable-console-print!)
 
-(-> js/navigator
-    (.-geolocation)
-    (.getCurrentPosition println))
+(defn doweather [data]
+   (jqm/let-ajax [weather {:url (str "/weather/" 
+                                     (-> data .-coords .-latitude)
+                                     "/"
+                                     (-> data .-coords .-longitude)) 
+                           :dataType :json}]
+     (println weather)))
+
+(jqm/ready
+  (let [geo (.-geolocation js/navigator)]
+    (if geo
+      (.getCurrentPosition geo doweather)
+      (println "GTFO"))))
