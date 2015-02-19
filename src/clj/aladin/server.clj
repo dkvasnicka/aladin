@@ -3,19 +3,20 @@
             [org.httpkit.client :as http]
             [compojure.core :refer [GET defroutes]]
             [compojure.handler :refer [site]]  
-            [compojure.route :refer [not-found files]]))
+            [compojure.route :refer [not-found files]]
+            [cheshire.core :refer :all]))
 
 (defn get-weather [lat lon]
-  (select-keys
-    @(http/get (str "http://aladinonline.androworks.org/get_data.php?latitude=" 
-                    lat "&longitude=" lon))
-    [:body]))
+  (parse-string
+    (:body
+      @(http/get (str "http://aladinonline.androworks.org/get_data.php?latitude=" 
+                      lat "&longitude=" lon)))
+    true))
 
 (defroutes allroutes
   (GET "/weather/:lat/:lon" [lat lon] 
-       (merge
-         (get-weather lat lon)
-         {:headers {"Content-Type" "application/json"}}))
+       {:headers {"Content-Type" "application/clojure"}
+        :body (pr-str (get-weather lat lon))})
   
   (files "/")
   (not-found "This is not the page you are looking for."))

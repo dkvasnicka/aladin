@@ -5,11 +5,12 @@
                  [http-kit "2.1.16"] 
                  [javax.servlet/servlet-api "2.5"]
                  [compojure "1.3.1"]
-                 [hiccup "1.0.5"]
+                 [cheshire "5.4.0"]
                  
                  ; cljs
                  [org.clojure/clojurescript "0.0-2760"]
                  [reagent "0.5.0-alpha3"]
+                 [com.andrewmcveigh/cljs-time "0.3.2"]
                  [jayq "2.5.4"]]
   
   :source-paths ["src/clj"]
