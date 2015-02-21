@@ -9,6 +9,7 @@
 (enable-console-print!)
 
 (defonce weather-data (r/atom {}))
+(defonce place (r/atom ""))
 
 (defn update-weather-state [weather]
   (let [curtime (now)
@@ -26,16 +27,32 @@
        (:current-index data)))
 
 (defn weather-now []
-  [:h1 [:img {:src (str "/img/meteo/" (current-value @weather-data :icons) ".svg")}]
-   (gstring/format "%.1f" (current-value @weather-data :TEMPERATURE)) " °C" ])
+  [:div {:id "current-weather" :class "pure-u-1-2"}
+    [:img {:src (str "/img/meteo/" (current-value @weather-data :icons) ".svg")}]
+    (gstring/format "%.1f" (current-value @weather-data :TEMPERATURE)) " °C"])
 
-(defn show-weather [data]
-   (jqm/let-ajax [weather 
-                  {:url 
-                   (str "/weather/" (-> data .-coords .-latitude) "/" (-> data .-coords .-longitude))}]
-     (update-weather-state weather)
-     (r/render-component [weather-now]
-                         (.getElementById js/document "container"))))
+(defn place-label []
+  [:div {:id "place" :class "pure-u-1-2"} @place])
+
+(defn app []
+  [:div {:class "pure-g"}
+   [place-label]
+   [weather-now]])
+
+(defn xpath-string [doc xpath]
+  (.-stringValue 
+    (.evaluate doc xpath doc nil (.-STRING_TYPE js/XPathResult) nil)))
+
+(defn show-weather [loc]
+  (let [lat (-> loc .-coords .-latitude)
+        lon (-> loc .-coords .-longitude)]
+    (jqm/let-ajax [weather {:url (str "/weather/" lat "/" lon)}
+                   rgeocode {:url (str "http://api4.mapy.cz/rgeocode?lat=" lat "&lon=" lon) 
+                             :dataType :xml}]
+      (reset! place (xpath-string rgeocode "/rgeocode/@label"))
+      (update-weather-state weather)
+      (r/render-component [app]
+                          (.-body js/document)))))
 
 (jqm/ready
   (let [geo (.-geolocation js/navigator)]

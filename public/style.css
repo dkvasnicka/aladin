@@ -1,18 +1,28 @@
-body {
+html, button, input, select, textarea, .pure-g [class *= "pure-u"] {
     font-family: istok-web, sans-serif;
 }
 
-#container {
-    width: 900px;
-    margin: 0 auto;
+#current-weather {
+    font-size: 70px;
 }
 
-h1 {
-    font-size: 100px;
+#place {
+    font-size: 20px;
+    text-align: right;
 }
 
-h1 img {
-    width: 100px;
-    height: 100px;
-    margin: 0 50px -20px 0;
+#current-weather img {
+    width: 70px;
+    height: 70px;
+    margin: 0 30px -15px 0;
+}
+
+.pure-g > div {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.pure-g [class *= "pure-u"] {
+    padding: 30px;
 }
