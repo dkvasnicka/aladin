@@ -24,5 +24,10 @@ h2 img {
 }
 
 .pure-g [class *= "pure-u"] {
-    padding: 30px;
+    padding: 20px;
+}
+
+.forecast-icon {
+    width: 30px;
+    height: 30px;
 }

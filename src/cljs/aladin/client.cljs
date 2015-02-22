@@ -26,19 +26,34 @@
   (nth (val-kw data)
        (:current-index data)))
 
+(defn deg-c [n]
+  (str (gstring/format "%.1f" n) " °C"))
+
 (defn weather-now []
   [:h2
     [:img {:src (str "/img/meteo/" (current-value @weather-data :icons) ".svg")}]
-    (gstring/format "%.1f" (current-value @weather-data :TEMPERATURE)) " °C"])
+    (deg-c (current-value @weather-data :TEMPERATURE))])
 
 (defn place-label []
   [:h1 @place])
 
+(defn forecast []
+  (into
+    [:div {:class "pure-u-1"}]
+    (map
+      #(vector :div {:class "pure-u-1-5"}
+               [:h4 (deg-c (first %))]
+               [:img {:src (str "/img/meteo/" (second %) ".svg") :class "forecast-icon"}])
+      (apply map vector 
+             (map (partial take-nth 2)
+                  ((juxt :TEMPERATURE :icons :WIND_SPEED) @weather-data))))))
+
 (defn app []
   [:div {:class "pure-g"}
-   [:div {:class "pure-u-1"}
+   [:div {:class "pure-u-1" :style {"padding" "30px"}}
     [place-label]
-    [weather-now]]])
+    [weather-now]]
+   [forecast]])
 
 (defn xpath-string [doc xpath]
   (.-stringValue 
