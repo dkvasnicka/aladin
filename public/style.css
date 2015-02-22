@@ -2,16 +2,16 @@ html, button, input, select, textarea, .pure-g [class *= "pure-u"] {
     font-family: istok-web, sans-serif;
 }
 
-#current-weather {
+h2 {
     font-size: 70px;
+    margin: 30px 0;
 }
 
-#place {
+h1 {
     font-size: 20px;
-    text-align: right;
 }
 
-#current-weather img {
+h2 img {
     width: 70px;
     height: 70px;
     margin: 0 30px -15px 0;

@@ -27,17 +27,18 @@
        (:current-index data)))
 
 (defn weather-now []
-  [:div {:id "current-weather" :class "pure-u-1-2"}
+  [:h2
     [:img {:src (str "/img/meteo/" (current-value @weather-data :icons) ".svg")}]
     (gstring/format "%.1f" (current-value @weather-data :TEMPERATURE)) " °C"])
 
 (defn place-label []
-  [:div {:id "place" :class "pure-u-1-2"} @place])
+  [:h1 @place])
 
 (defn app []
   [:div {:class "pure-g"}
-   [place-label]
-   [weather-now]])
+   [:div {:class "pure-u-1"}
+    [place-label]
+    [weather-now]]])
 
 (defn xpath-string [doc xpath]
   (.-stringValue 
