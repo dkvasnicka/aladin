@@ -1,12 +1,10 @@
 (ns aladin.client 
   (:require [reagent.core :as r]
-            [cljs-time.format :refer [parse formatter]]
-            [cljs-time.core :refer [now in-hours interval]]
+            [cljs-time.format :refer [parse formatter unparse]]
+            [cljs-time.core :refer [now in-hours interval plus hours]]
             [goog.string :as gstring]
             [jayq.core :refer [document-ready ajax]])
   (:require-macros [jayq.macros :as jqm]))
-
-(enable-console-print!)
 
 (defonce weather-data (r/atom {}))
 (defonce place (r/atom ""))
@@ -20,7 +18,8 @@
             (-> (:parameterValues weather)
                 (assoc :icons (mapcat (partial repeat 2) 
                                       (:weatherIconNames weather)))
-                (assoc :current-index index)))))
+                (assoc :current-index index)
+                (assoc :times (iterate #(plus % (hours 1)) forecast-from))))))
 
 (defn current-value [data val-kw]
   (nth (val-kw data)
@@ -41,16 +40,18 @@
   (into
     [:div {:class "pure-u-1"}]
     (map
-      #(vector :div {:class "pure-u-1-5"}
+      #(vector :div {:class "forecast-block"}
+               [:h5 (unparse (formatter "EEE HH:mm") (last %))]
                [:h4 (deg-c (first %))]
                [:img {:src (str "/img/meteo/" (second %) ".svg") :class "forecast-icon"}])
       (apply map vector 
-             (map (partial take-nth 2)
-                  ((juxt :TEMPERATURE :icons :WIND_SPEED) @weather-data))))))
+             (map (comp (partial take-nth 2) (partial drop (inc (:current-index @weather-data))))
+                  ((juxt :TEMPERATURE :icons :times) 
+                   @weather-data))))))
 
 (defn app []
   [:div {:class "pure-g"}
-   [:div {:class "pure-u-1" :style {"padding" "30px"}}
+   [:div {:class "pure-u-1"}
     [place-label]
     [weather-now]]
    [forecast]])
@@ -74,4 +75,4 @@
   (let [geo (.-geolocation js/navigator)]
     (if geo
       (.getCurrentPosition geo show-weather)
-      (println "GTFO"))))
+      (js/alert "Bez geolokace to (zatím) nejde :("))))
