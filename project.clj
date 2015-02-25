@@ -13,6 +13,8 @@
                  [com.andrewmcveigh/cljs-time "0.3.2"]
                  [jayq "2.5.4"]]
   
+  :plugins [[lein-cljsbuild "1.0.5"]]
+
   :source-paths ["src/clj"]
   :main aladin.server
   
