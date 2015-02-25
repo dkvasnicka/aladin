@@ -6,6 +6,8 @@
             [compojure.route :refer [not-found files]]
             [cheshire.core :refer :all]))
 
+(def env (into {} (System/getenv)))
+
 (defn get-weather [lat lon]
   (parse-string
     (:body
@@ -22,4 +24,5 @@
   (not-found "This is not the page you are looking for."))
 
 (defn -main [& args]
-  (run-server (site #'allroutes) {:port 3000}))
+  (run-server (site #'allroutes) 
+              {:ip (env "HOST") :port (Integer/parseInt (env "PORT"))}))

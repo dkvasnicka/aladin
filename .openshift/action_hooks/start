@@ -2,4 +2,12 @@
 # The logic to start up your application should be put in this
 # script. The application will work only if it binds to
 # $OPENSHIFT_DIY_IP:8080
-nohup $OPENSHIFT_REPO_DIR/diy/testrubyserver.rb $OPENSHIFT_DIY_IP $OPENSHIFT_REPO_DIR/diy |& /usr/bin/logshifter -tag diy &
+
+export HTTP_CLIENT="wget --no-check-certificate -O"
+export PORT=$OPENSHIFT_DIY_PORT
+export HOST=$OPENSHIFT_DIY_IP
+export HOME=$OPENSHIFT_DATA_DIR
+export LEIN_JVM_OPTS=-Duser.home=$HOME
+
+cd $OPENSHIFT_REPO_DIR
+nohup $OPENSHIFT_REPO_DIR/bin/lein run | /usr/bin/logshifter -tag diy &
