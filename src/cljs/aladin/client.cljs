@@ -9,10 +9,13 @@
 (defonce weather-data (r/atom {}))
 (defonce place (r/atom ""))
 
+(defn start-timestamp [weather]
+  (parse (formatter "yyyy-MM-dd HH:mm:ss Z") 
+         (str (:forecastTimeIso weather) " +0100")))
+
 (defn update-weather-state [weather]
   (let [curtime (now)
-        forecast-from (parse (formatter "yyyy-MM-dd HH:mm:ss Z") 
-                             (str (:forecastTimeIso weather) " +0100"))
+        forecast-from (start-timestamp weather)
         index (in-hours (interval forecast-from curtime))]
     (reset! weather-data
             (-> (:parameterValues weather)
@@ -28,13 +31,20 @@
 (defn deg-c [n]
   (str (gstring/format "%.1f" n) " °C"))
 
+(defn icon [iname & {:keys [attrs] :or {attrs {}}}]
+  [:img (merge attrs {:src (str "/img/meteo/" iname ".svg")})])
+
 (defn weather-now []
   [:h2
-    [:img {:src (str "/img/meteo/" (current-value @weather-data :icons) ".svg")}]
+    (icon (current-value @weather-data :icons))
     (deg-c (current-value @weather-data :TEMPERATURE))])
 
 (defn place-label []
   [:h1 @place])
+
+(defn every-other-since [idx]
+  (comp (partial take-nth 2) 
+        (partial drop (inc idx))))
 
 (defn forecast []
   (into
@@ -43,11 +53,10 @@
       #(vector :div {:class "forecast-block"}
                [:h5 (unparse (formatter "EEE HH:mm") (last %))]
                [:h4 (deg-c (first %))]
-               [:img {:src (str "/img/meteo/" (second %) ".svg") :class "forecast-icon"}])
+               (icon (second %) :attrs {:class "forecast-icon"}))
       (apply map vector 
-             (map (comp (partial take-nth 2) (partial drop (inc (:current-index @weather-data))))
-                  ((juxt :TEMPERATURE :icons :times) 
-                   @weather-data))))))
+             (map (every-other-since (:current-index @weather-data))
+                  ((juxt :TEMPERATURE :icons :times) @weather-data))))))
 
 (defn app []
   [:div {:class "pure-g"}
@@ -72,7 +81,6 @@
                           (.-body js/document)))))
 
 (jqm/ready
-  (let [geo (.-geolocation js/navigator)]
-    (if geo
-      (.getCurrentPosition geo show-weather)
-      (js/alert "Bez geolokace to (zatím) nejde :("))))
+  (if-let [geo (.-geolocation js/navigator)]
+    (.getCurrentPosition geo show-weather)
+    (js/alert "Bez geolokace to (zatím) nejde :(")))

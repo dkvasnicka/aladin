@@ -34,3 +34,9 @@ h2 img {
     border-left: 1px #ababab dotted;
     border-bottom: 1px #ababab dotted;
 }
+
+#placeholder {
+    margin: 100px;
+    font-size: 5em;
+    color: #eaeaea;
+}
