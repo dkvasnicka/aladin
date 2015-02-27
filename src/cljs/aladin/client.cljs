@@ -15,14 +15,14 @@
 
 (defn update-weather-state [weather]
   (let [curtime (now)
-        forecast-block (start-timestamp weather)
-        index (in-hours (interval forecast-block curtime))]
+        forecast-from (start-timestamp weather)
+        index (in-hours (interval forecast-from curtime))]
     (reset! weather-data
             (-> (:parameterValues weather)
                 (assoc :icons (mapcat (partial repeat 2) 
                                       (:weatherIconNames weather)))
                 (assoc :current-index index)
-                (assoc :times (iterate #(plus % (hours 1)) forecast-block))))))
+                (assoc :times (iterate #(plus % (hours 1)) forecast-from))))))
 
 (defn current-value [data val-kw]
   (nth (val-kw data)
@@ -82,7 +82,7 @@
                              :dataType :xml}]
       (reset! place (xpath-string rgeocode "/rgeocode/@label"))
       (update-weather-state weather)
-      (r/render-component [app] (.-body js/document)))))
+      (r/render-component [app] (.getElementById js/document "placeholder")))))
 
 (jqm/ready
   (if-let [geo (.-geolocation js/navigator)]
