@@ -10,4 +10,4 @@ export HOME=$OPENSHIFT_DATA_DIR
 export LEIN_JVM_OPTS=-Duser.home=$HOME
 
 cd $OPENSHIFT_REPO_DIR
-nohup $OPENSHIFT_REPO_DIR/bin/lein do cljsbuild once, run | /usr/bin/logshifter -tag diy &
+nohup $OPENSHIFT_REPO_DIR/bin/lein do clean, cljsbuild once, run | /usr/bin/logshifter -tag diy &
