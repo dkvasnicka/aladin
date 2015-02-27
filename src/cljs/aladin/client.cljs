@@ -15,14 +15,14 @@
 
 (defn update-weather-state [weather]
   (let [curtime (now)
-        forecast-from (start-timestamp weather)
-        index (in-hours (interval forecast-from curtime))]
+        forecast-block (start-timestamp weather)
+        index (in-hours (interval forecast-block curtime))]
     (reset! weather-data
             (-> (:parameterValues weather)
                 (assoc :icons (mapcat (partial repeat 2) 
                                       (:weatherIconNames weather)))
                 (assoc :current-index index)
-                (assoc :times (iterate #(plus % (hours 1)) forecast-from))))))
+                (assoc :times (iterate #(plus % (hours 1)) forecast-block))))))
 
 (defn current-value [data val-kw]
   (nth (val-kw data)
@@ -46,17 +46,21 @@
   (comp (partial take-nth 2) 
         (partial drop (inc idx))))
 
+(defrecord Forecast [datetime icon-name temp])
+
+(defn forecast-block [hourly-data]
+  (vector :div {:class "forecast-block"}
+          [:h5 (unparse (formatter "EEE HH:mm") (:datetime hourly-data))]
+          [:h4 (deg-c (:temp hourly-data))]
+          (icon (:icon-name hourly-data) :attrs {:class "forecast-icon"})))
+
 (defn forecast []
   (into
     [:div {:class "pure-u-1"}]
-    (map
-      #(vector :div {:class "forecast-block"}
-               [:h5 (unparse (formatter "EEE HH:mm") (last %))]
-               [:h4 (deg-c (first %))]
-               (icon (second %) :attrs {:class "forecast-icon"}))
-      (apply map vector 
-             (map (every-other-since (:current-index @weather-data))
-                  ((juxt :TEMPERATURE :icons :times) @weather-data))))))
+    (map forecast-block
+         (apply map ->Forecast 
+                (map (every-other-since (:current-index @weather-data))
+                     ((juxt :times :icons :TEMPERATURE) @weather-data))))))
 
 (defn app []
   [:div {:class "pure-g"}
@@ -66,8 +70,9 @@
    [forecast]])
 
 (defn xpath-string [doc xpath]
-  (.-stringValue 
-    (.evaluate doc xpath doc nil (.-STRING_TYPE js/XPathResult) nil)))
+  (-> doc 
+      (.evaluate xpath doc nil (.-STRING_TYPE js/XPathResult) nil)
+      (.-stringValue)))
 
 (defn show-weather [loc]
   (let [lat (-> loc .-coords .-latitude)
@@ -77,8 +82,7 @@
                              :dataType :xml}]
       (reset! place (xpath-string rgeocode "/rgeocode/@label"))
       (update-weather-state weather)
-      (r/render-component [app]
-                          (.-body js/document)))))
+      (r/render-component [app] (.-body js/document)))))
 
 (jqm/ready
   (if-let [geo (.-geolocation js/navigator)]
